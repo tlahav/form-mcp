@@ -1,0 +1,50 @@
+{
+    "id": "event-registration",
+    "name": "Event Registration",
+    "schema": {
+        "type": "object",
+        "title": "Event Registration",
+        "description": "Register for the upcoming tech conference.",
+        "properties": {
+            "attendeeName": {
+                "type": "string"
+            },
+            "company": {
+                "type": "string"
+            },
+            "email": {
+                "type": "string",
+                "format": "email"
+            },
+            "dietaryRestrictions": {
+                "type": "string",
+                "enum": [
+                    "none",
+                    "vegetarian",
+                    "vegan",
+                    "gluten-free",
+                    "kosher",
+                    "halal"
+                ]
+            },
+            "workshopInterests": {
+                "type": "array",
+                "items": {
+                    "type": "string",
+                    "enum": [
+                        "AI/ML",
+                        "Web Dev",
+                        "Cloud Ops",
+                        "Security"
+                    ]
+                },
+                "minItems": 1
+            }
+        },
+        "required": [
+            "attendeeName",
+            "email",
+            "workshopInterests"
+        ]
+    }
+}

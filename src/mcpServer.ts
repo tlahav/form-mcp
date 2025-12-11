@@ -2,6 +2,12 @@ import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { RequestSchema, ResultSchema } from "@modelcontextprotocol/sdk/types.js";
 import { z } from "zod";
+import * as fs from "fs";
+import * as path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 import {
   FormDefinition,
   FormSession,
@@ -38,7 +44,48 @@ const demoForm: FormDefinition = {
 
 };
 
+
 store.registerForm(demoForm);
+
+function loadFormsFromDir(dir: string) {
+  const files = fs.readdirSync(dir);
+  for (const file of files) {
+    if (file.endsWith(".json")) {
+      try {
+        const content = fs.readFileSync(path.join(dir, file), "utf-8");
+        const formDef = JSON.parse(content) as FormDefinition;
+        // Basic validation that it has id and schema
+        if (formDef.id && formDef.schema) {
+          store.registerForm(formDef);
+          console.error(`Registered form: ${formDef.id} from ${file}`);
+        }
+      } catch (err: any) {
+        console.error(`Failed to load form ${file}: ${err.message}`);
+      }
+    }
+  }
+}
+
+function loadFormsFromDisk() {
+  // Try to find forms in src/forms relative to the project root
+  const projectRoot = path.resolve(__dirname, "..");
+  const formsDir = path.join(projectRoot, "src", "forms");
+
+  if (!fs.existsSync(formsDir)) {
+    console.warn(`Forms directory not found at ${formsDir}`);
+    // Fallback: try checking just "forms" next to index.js
+    const localForms = path.join(__dirname, "forms");
+    if (fs.existsSync(localForms)) {
+      console.warn(`Found local forms dir at ${localForms}`);
+      loadFormsFromDir(localForms);
+    }
+    return;
+  }
+
+  loadFormsFromDir(formsDir);
+}
+
+loadFormsFromDisk();
 
 type SessionSummary = {
   sessionId: string;
@@ -189,23 +236,48 @@ export async function createServer(): Promise<any> {
   // Start a new form session
   registerTool(
     "start_form_session",
-    "Start a new form session for a given form id.",
+    "Start a new form session for a given form id, optionally associated with a user.",
     z.object({
       formId: z.string(),
+      userId: z.string().optional(),
     }),
     z.object({
       session: z.any(),
     }),
-    async ({ formId }: { formId: string }) => {
-      const session = store.createSession(formId);
+    async ({ formId, userId }: { formId: string; userId?: string }) => {
+      const session = store.createSession(formId, userId);
       return { session: summarizeSession(session) };
     },
     {
       type: "object",
       properties: {
         formId: { type: "string" },
+        userId: { type: "string" },
       },
       required: ["formId"],
+    }
+  );
+
+  // List user's form sessions
+  registerTool(
+    "list_user_forms",
+    "List all form sessions associated with a specific user.",
+    z.object({
+      userId: z.string(),
+    }),
+    z.object({
+      sessions: z.array(z.any()),
+    }),
+    async ({ userId }: { userId: string }) => {
+      const sessions = store.listSessions({ userId });
+      return { sessions: sessions.map(summarizeSession) };
+    },
+    {
+      type: "object",
+      properties: {
+        userId: { type: "string" },
+      },
+      required: ["userId"],
     }
   );
 

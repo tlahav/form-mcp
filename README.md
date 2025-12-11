@@ -12,12 +12,17 @@ An MCP server that manages JSON Schema-driven forms with optional LLM-assisted v
 
 ## MCP Tools
 
-- `list_forms`: list available form definitions.
-- `start_form_session`: create a new session for a form.
+- `list_forms`: list available form definitions (scanned from `src/forms`).
+- `start_form_session`: create a new session for a form (supports optional `userId`).
+- `list_user_forms`: list all active sessions for a specific user.
 - `get_form_state`: inspect session status, data, and field validity.
 - `set_field_value`: set or update a specific field value by path.
 - `next_question` / `previous_question`: move between questions.
 - `validate_form`: run schema and optional LLM validation.
+
+## Form Definitions
+
+Place your JSON Schema form definitions in the `src/forms` directory. The server loads them on startup. Three samples are included: `bug-report`, `customer-feedback`, and `event-registration`.
 
 ## Development
 

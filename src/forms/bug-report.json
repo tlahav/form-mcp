@@ -1,0 +1,39 @@
+{
+    "id": "bug-report",
+    "name": "Software Bug Report",
+    "schema": {
+        "type": "object",
+        "title": "Bug Report",
+        "description": "Report a software issue or bug.",
+        "properties": {
+            "productVersion": {
+                "type": "string",
+                "pattern": "^\\d+\\.\\d+\\.\\d+$"
+            },
+            "severity": {
+                "type": "string",
+                "enum": [
+                    "low",
+                    "medium",
+                    "high",
+                    "critical"
+                ]
+            },
+            "stepsToReproduce": {
+                "type": "string",
+                "description": "Detailed steps to reproduce the issue"
+            },
+            "expectedBehavior": {
+                "type": "string"
+            },
+            "actualBehavior": {
+                "type": "string"
+            }
+        },
+        "required": [
+            "productVersion",
+            "severity",
+            "stepsToReproduce"
+        ]
+    }
+}

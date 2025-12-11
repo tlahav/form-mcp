@@ -38,6 +38,7 @@ export type FormDefinition = {
 
 export type FormSession = {
   sessionId: string;
+  userId?: string;
   formId: string;
   definitionSnapshot: FormDefinition;
   data: Record<string, unknown>;

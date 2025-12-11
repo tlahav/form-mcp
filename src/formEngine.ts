@@ -32,7 +32,7 @@ export class InMemoryFormStore {
     return this.forms.get(id);
   }
 
-  createSession(formId: string): FormSession {
+  createSession(formId: string, userId?: string): FormSession {
     const form = this.forms.get(formId);
     if (!form) throw new Error(`Form not found: ${formId}`);
 
@@ -40,6 +40,7 @@ export class InMemoryFormStore {
     const sessionId = uuidv4();
     const session: FormSession = {
       sessionId,
+      userId,
       formId,
       definitionSnapshot: form,
       data: {},
@@ -56,6 +57,12 @@ export class InMemoryFormStore {
 
   getSession(sessionId: string): FormSession | undefined {
     return this.sessions.get(sessionId);
+  }
+
+  listSessions(filter?: { userId?: string }): FormSession[] {
+    const all = [...this.sessions.values()];
+    if (!filter?.userId) return all;
+    return all.filter((s) => s.userId === filter.userId);
   }
 }
 
